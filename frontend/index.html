@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<style>
+:root{--bg:#eef1f4;--panel:#fff;--ink:#101828;--mute:#5b6676;--rule:#cfd6df;--blue:#2447c9;--mark:#ffe27a;--ok:#1d7a4d;--bad:#b42318;
+--serif:"Newsreader",Georgia,serif;--sans:"Instrument Sans",system-ui,sans-serif}
+@media(prefers-color-scheme:dark){:root{--bg:#0f141b;--panel:#171e28;--ink:#e8edf4;--mute:#97a3b4;--rule:#2b3544;--blue:#8aa4ff;--mark:#6b5a12;--ok:#5fd09a;--bad:#ff8a7a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans)}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 60px}
+h1{font:600 34px/1.1 var(--serif);margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--mute);margin:0 0 22px}
+form{display:flex;gap:10px;margin-bottom:24px}
+textarea{flex:1;resize:vertical;min-height:54px;padding:14px 16px;border:1.5px solid var(--rule);border-radius:10px;background:var(--panel);color:var(--ink);font:16px/1.4 var(--sans)}
+textarea:focus,button:focus-visible,a:focus-visible,select:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+button.go{padding:0 26px;border:0;border-radius:10px;background:var(--blue);color:#fff;font:600 15px var(--sans);cursor:pointer}
+@media(prefers-color-scheme:dark){button.go{color:#0f141b}}
+button.go:disabled{opacity:.5;cursor:wait}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start}
+@media(max-width:860px){.grid{grid-template-columns:1fr}form{flex-direction:column}button.go{height:48px}}
+.side{display:flex;flex-direction:column;gap:18px;position:sticky;top:16px}
+@media(max-width:860px){.side{position:static}}
+.box{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:14px 16px}
+.box h2{font:600 13px var(--sans);margin:0 0 10px;color:var(--mute)}
+ol.steps{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+ol.steps li{display:flex;gap:10px;align-items:center;color:var(--mute)}
+ol.steps li::before{content:"";width:10px;height:10px;border-radius:50%;border:2px solid var(--rule);flex:none}
+ol.steps li.active{color:var(--ink);font-weight:500}
+ol.steps li.active::before{border-color:var(--blue);background:var(--blue);animation:pulse 1s infinite}
+ol.steps li.done{color:var(--ink)}
+ol.steps li.done::before{background:var(--ok);border-color:var(--ok)}
+@keyframes pulse{50%{opacity:.35}}
+@media(prefers-reduced-motion:reduce){ol.steps li.active::before{animation:none}}
+.subq{margin:10px 0 0;padding-left:18px;color:var(--mute);font-size:13.5px}
+.src{display:block;padding:9px 10px;margin:0 -10px;border-radius:7px;color:inherit;text-decoration:none;scroll-margin-top:16px}
+.src:hover,.src.hl{background:var(--mark)}
+.src b{display:inline-block;min-width:22px;color:var(--blue)}
+.src .t{font-weight:500;overflow-wrap:anywhere}
+.src small{display:block;color:var(--mute);margin-left:22px}
+.q-high{color:var(--ok)}.q-low{color:var(--bad)}
+.report{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:30px 34px;min-height:220px}
+.report .empty{color:var(--mute)}
+.md{font:18px/1.65 var(--serif);max-width:68ch}
+.md h1,.md h2,.md h3{font-family:var(--serif);line-height:1.2;margin:1.6em 0 .5em}
+.md h2{font-size:22px;border-top:1px solid var(--rule);padding-top:.9em}
+.md>:first-child{margin-top:0}
+.md p{margin:.7em 0}.md ul,.md ol{padding-left:1.2em}
+a.cite{font:600 11px var(--sans);vertical-align:super;line-height:0;padding:2px 4px;margin:0 1px;border-radius:4px;background:var(--rule);color:var(--blue);text-decoration:none}
+a.cite:hover{background:var(--mark);color:var(--ink)}
+.meta{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:22px;padding-top:14px;border-top:1px solid var(--rule);color:var(--mute);font-size:13px}
+.meta button,.hist select{font:500 13px var(--sans);padding:6px 12px;border:1px solid var(--rule);border-radius:7px;background:var(--panel);color:var(--ink);cursor:pointer}
+.err{color:var(--bad);font-weight:500}
+.hist select{width:100%}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Research Assistant</h1>
+  <p class="sub">Ask a question. It searches the web, reads sources, and writes a report where every claim is cited and fact-checked.</p>
+  <form id="form">
+    <textarea id="q" placeholder="e.g. What is the current state of solid-state battery commercialization?" required minlength="5" maxlength="600"></textarea>
+    <button class="go" id="go">Start research</button>
+  </form>
+  <div class="grid">
+    <aside class="side">
+      <div class="box" id="progBox"><h2>Progress</h2>
+        <ol class="steps" id="steps"></ol>
+        <ol class="subq" id="subq"></ol>
+      </div>
+      <div class="box"><h2>Sources <span id="srcCount"></span></h2><div id="srcs"><span style="color:var(--mute)">Sources appear as they are read.</span></div></div>
+      <div class="box hist"><h2>Past reports</h2><select id="hist" aria-label="Past reports"><option value="">Select a report</option></select></div>
+    </aside>
+    <main class="report" id="report" aria-live="polite">
+      <div class="empty">Your report will appear here.</div>
+    </main>
+  </div>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+const STEPS = [["plan","Plan sub-questions"],["search","Search the web"],["read","Read and extract facts"],["gaps","Check for gaps"],["write","Write report"],["verify","Fact-check claims"]];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let raw = "", sources = [], raf = 0;
+
+function renderSteps(active, doneAll){
+  const idx = STEPS.findIndex(s => s[0] === active);
+  $("steps").innerHTML = STEPS.map(([k, label], i) =>
+    `<li class="${doneAll || i < idx ? "done" : i === idx ? "active" : ""}">${label}</li>`).join("");
+}
+function md(text){
+  const html = marked.parse(text, {breaks:false}).replace(/\[(\d+)\]/g, '<a class="cite" href="#s$1" data-n="$1" title="Source $1">$1</a>');
+  return DOMPurify.sanitize(html);
+}
+function paint(){ $("report").innerHTML = `<div class="md">${md(raw)}</div>`; }
+function schedulePaint(){ if(!raf) raf = requestAnimationFrame(() => { raf = 0; paint(); }); }
+function addSource(s){
+  sources.push(s);
+  if(sources.length === 1) $("srcs").innerHTML = "";
+  $("srcCount").textContent = `(${sources.length})`;
+  $("srcs").insertAdjacentHTML("beforeend",
+    `<a class="src" id="s${s.id}" href="${esc(s.url)}" target="_blank" rel="noopener noreferrer"><span class="t"><b>${s.id}</b>${esc(s.title)}</span>
+     <small>${esc(s.domain)} &middot; <span class="q-${s.quality}">${s.quality} quality</span> &middot; ${s.fact_count} facts</small></a>`);
+}
+function finish(d){
+  raw = d.report; paint();
+  const n = sources.length;
+  $("report").insertAdjacentHTML("beforeend",
+    `<div class="meta"><span>${n} sources &middot; ${d.seconds}s &middot; ${d.corrected ? d.corrected + " claim" + (d.corrected>1?"s":"") + " corrected by fact-check" : "all claims passed fact-check"}</span>
+     <button id="copy">Copy markdown</button></div>`);
+  $("copy").onclick = async e => { await navigator.clipboard.writeText(raw); e.target.textContent = "Copied"; };
+  renderSteps("", true);
+  loadHistory();
+}
+function handle(ev){
+  if(ev.type === "status") renderSteps(ev.step);
+  else if(ev.type === "plan") $("subq").innerHTML = ev.subquestions.map(q => `<li>${esc(q)}</li>`).join("");
+  else if(ev.type === "source") addSource(ev);
+  else if(ev.type === "token"){ raw += ev.text; schedulePaint(); }
+  else if(ev.type === "report"){ raw = ev.text; paint(); }
+  else if(ev.type === "done") finish(ev);
+  else if(ev.type === "error") $("report").innerHTML = `<p class="err">${esc(ev.text)}</p>`;
+}
+$("form").addEventListener("submit", async e => {
+  e.preventDefault();
+  raw = ""; sources = [];
+  $("go").disabled = true; $("subq").innerHTML = ""; $("srcCount").textContent = "";
+  $("srcs").innerHTML = '<span style="color:var(--mute)">Sources appear as they are read.</span>';
+  $("report").innerHTML = '<div class="empty">Researching&hellip;</div>';
+  renderSteps("plan");
+  try{
+    const res = await fetch("/api/research", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({question:$("q").value})});
+    if(!res.ok) throw new Error(res.status === 422 ? "Question must be 5-600 characters." : "Server error " + res.status);
+    const reader = res.body.getReader(), dec = new TextDecoder(); let buf = "";
+    for(;;){
+      const {done, value} = await reader.read(); if(done) break;
+      buf += dec.decode(value, {stream:true});
+      const parts = buf.split("\n\n"); buf = parts.pop();
+      for(const p of parts) if(p.startsWith("data: ")) handle(JSON.parse(p.slice(6)));
+    }
+  }catch(err){ $("report").innerHTML = `<p class="err">${esc(err.message)}</p>`; }
+  $("go").disabled = false;
+});
+$("q").addEventListener("keydown", e => { if(e.key === "Enter" && (e.metaKey || e.ctrlKey)) $("form").requestSubmit(); });
+// hovering a citation highlights its source; clicking scrolls to it
+$("report").addEventListener("mouseover", e => { const c = e.target.closest(".cite"); document.querySelectorAll(".src.hl").forEach(x => x.classList.remove("hl")); if(c) $("s"+c.dataset.n)?.classList.add("hl"); });
+$("report").addEventListener("click", e => { const c = e.target.closest(".cite"); if(c){ e.preventDefault(); $("s"+c.dataset.n)?.scrollIntoView({behavior:"smooth", block:"center"}); } });
+async function loadHistory(){
+  try{
+    const rows = await (await fetch("/api/reports")).json();
+    $("hist").innerHTML = '<option value="">Select a report</option>' + rows.map(r => `<option value="${r.id}">${esc(r.question.slice(0,60))}</option>`).join("");
+  }catch{}
+}
+$("hist").addEventListener("change", async e => {
+  if(!e.target.value) return;
+  const d = await (await fetch("/api/reports/" + e.target.value)).json();
+  sources = []; $("srcs").innerHTML = ""; $("q").value = d.question; $("subq").innerHTML = "";
+  d.sources.forEach(s => addSource({...s, fact_count: s.facts.length}));
+  finish(d);
+});
+renderSteps(""); loadHistory();
+</script>
+</body>
+</html>

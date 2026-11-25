@@ -1,0 +1,8 @@
+.env
+myenv/
+.venv/
+__pycache__/
+*.pyc
+reports.db
+.vscode/
+test_api.py
