@@ -25,3 +25,7 @@ Open http://localhost:8000
 
 ## Ideas to extend
 Add auth, pgvector search over past reports, an eval set of 20-30 questions, and per-report cost tracking.
+
+# Project Preview
+<p align="center"> <img src="screenshots/ss_1.png" width="70%"> </p>
+<p align="center"> <img src="screenshots/ss_2.png" width="70%"> </p>
