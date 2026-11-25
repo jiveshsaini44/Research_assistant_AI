@@ -30,10 +30,7 @@ def sse(obj: dict) -> str:
     return f"data: {json.dumps(obj)}\n\n"
 
 
-@app.get("/healthz")
-async def healthz():
-    return {"ok": True}
-"""@app.get("/api/health")
+@app.get("/api/health")
 async def health():
     '''Open http://localhost:8000/api/health to check both keys quickly.'''
     out = {"model": agent.MODEL, "tavily_key_set": bool(agent.TAVILY_KEY)}
@@ -44,7 +41,7 @@ async def health():
     except Exception as e:
         out["llm"] = f"FAILED: {type(e).__name__}: {e}"
     return out
-"""
+
 
 @app.post("/api/research")
 async def run(body: Ask):
